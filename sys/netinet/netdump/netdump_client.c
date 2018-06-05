@@ -108,7 +108,7 @@ static int	 netdump_start(struct dumperinfo *di);
 static int	 netdump_udp_output(struct mbuf *m);
 
 /* Must be at least as big as the chunks dumpsys() gives us. */
-#define ND_BUF_SIZE MAXDUMPPGS * PAGE_SIZE * 2
+#define ND_BUF_SIZE MAXDUMPPGS * PAGE_SIZE * 1
 static unsigned char nd_buf[ND_BUF_SIZE];
 static off_t nd_txr_offset = 0;
 static off_t nd_buf_offset = 0;
@@ -577,7 +577,7 @@ netdump_send(uint32_t type, off_t offset, unsigned char *data, uint32_t datalen)
 	int retries, polls, error;
 
 	MPASS(nd_ifp != NULL);
-	NETDDEBUG("nd_seqno=%u, datalen=%u, nd_windw=%u\n", nd_seqno, datalen, nd_windw);
+	//NETDDEBUG("nd_seqno=%u, datalen=%u, nd_windw=%u\n", nd_seqno, datalen, nd_windw);
 
 	for (i = sent_so_far = 0; sent_so_far < datalen || (i == 0 && datalen == 0);) {
 		want_acks = 0;
@@ -588,10 +588,10 @@ retransmit:
 		for (j = i; ((i - j < nd_windw - 1) && 
 				(sent_so_far < datalen)) || 
 				(i == 0 && datalen == 0); i++) {
-			NETDDEBUG("i=%u, nd_windw_lhs=%u, nd_windw=%u\n", i, nd_windw_lhs, nd_windw);
-			NETDDEBUG("j=%u, nd_seqno=%u\n", j, nd_seqno);
-			NETDDEBUG("i - j=%u\n", i - j);
-			KASSERT(i - j < nd_windw, ("%d - %d = %d, should be less than: %d", i, j, i - j, nd_windw));
+			//NETDDEBUG("i=%u, nd_windw_lhs=%u, nd_windw=%u\n", i, nd_windw_lhs, nd_windw);
+			//NETDDEBUG("j=%u, nd_seqno=%u\n", j, nd_seqno);
+			//NETDDEBUG("i - j=%u\n", i - j);
+			KASSERT((i - j) < nd_windw, ("%d - %d = %d, should be less than: %d", i, j, i - j, nd_windw));
 			pktlen = datalen - sent_so_far;
 
 			/* First bound: the packet structure. */
@@ -1119,8 +1119,8 @@ netdump_dumper(void *priv __unused, void *virtual,
 	/*
 	 * If buffer is full, transmit buffer
 	 */
-	NETDDEBUG("nd_buf_length: %zu, length: %zu, offset: %zu\n",
-	    nd_buf_length, length, (uintmax_t)offset);
+	//NETDDEBUG("nd_buf_length: %zu, length: %zu, offset: %zu\n",
+	//    nd_buf_length, length, (uintmax_t)offset);
 	if (nd_buf_length + length > ND_BUF_SIZE) {
 		error = netdump_send(NETDUMP_VMCORE, nd_txr_offset, nd_buf, nd_buf_length);
 		if (error != 0) {
@@ -1134,8 +1134,8 @@ netdump_dumper(void *priv __unused, void *virtual,
 	/*
 	 * Buffer dump contents
 	 */
-	NETDDEBUG("buffering: nd_buf: %p, nd_buf_offset: %zu, length: %zu\n",
-	    nd_buf, (uintmax_t)nd_buf_offset, length);
+	//NETDDEBUG("buffering: nd_buf: %p, nd_buf_offset: %zu, length: %zu\n",
+	//    nd_buf, (uintmax_t)nd_buf_offset, length);
 	memmove(nd_buf + nd_buf_offset, virtual, length);
 	if (nd_buf_offset == 0) {
 	/*
@@ -1145,8 +1145,8 @@ netdump_dumper(void *priv __unused, void *virtual,
 	}
 	nd_buf_offset += length;
 	nd_buf_length += length;
-	NETDDEBUG("done: nd_txr_offset: %zu, nd_buf_offset: %zu, length: %zu\n",
-	    (uintmax_t)nd_txr_offset, (uintmax_t)nd_buf_offset, length);
+	//NETDDEBUG("done: nd_txr_offset: %zu, nd_buf_offset: %zu, length: %zu\n",
+	//    (uintmax_t)nd_txr_offset, (uintmax_t)nd_buf_offset, length);
 
 	return (0);
 }
