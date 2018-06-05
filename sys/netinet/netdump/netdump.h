@@ -58,6 +58,7 @@ struct netdump_msg_hdr {
 
 struct netdump_ack {
 	uint32_t	na_seqno;	/* Match acks with msgs. */
+	uint32_t	na_windw;	/* Receiver window size of sender in pkts */
 } __packed;
 
 struct netdump_conf {
