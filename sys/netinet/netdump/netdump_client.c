@@ -130,7 +130,7 @@ CTASSERT(sizeof(rcvd_acks) * NBBY == NETDUMP_MAX_IN_FLIGHT);
 static int nd_polls = 2000;
 
 /* Times to retransmit lost packets. */
-static int nd_retries = 10;
+static int nd_retries = 100;
 
 /* Number of ARP retries. */
 static int nd_arp_retries = 3;
@@ -585,7 +585,7 @@ netdump_send(uint32_t type, off_t offset, unsigned char *data, uint32_t datalen)
 		retries = 0;
 retransmit:
 		/* Chunks can be too big to fit in packets. */
-		for (j = i; ((i - j < nd_windw - 1) && 
+		for (j = i; (((i - j) < nd_windw) && 
 				(sent_so_far < datalen)) || 
 				(i == 0 && datalen == 0); i++) {
 			//NETDDEBUG("i=%u, nd_windw_lhs=%u, nd_windw=%u\n", i, nd_windw_lhs, nd_windw);
@@ -669,7 +669,7 @@ retransmit:
 				goto retransmit;
 			}
 			netdump_network_poll();
-			DELAY(500);
+			DELAY(200);
 		}
 	}
 	nd_seqno += i;
@@ -1264,6 +1264,10 @@ netdump_write_headers(struct dumperinfo *di, struct kerneldumpheader *kdh,
 static void
 netdump_cleanup(void)
 {
+
+	nd_buf_offset = 0;
+	nd_buf_length = 0;
+	nd_txr_offset = 0;
 
 	if (restore_gw_addr != 0) {
 		nd_gateway.s_addr = INADDR_ANY;
